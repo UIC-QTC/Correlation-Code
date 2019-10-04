@@ -1,0 +1,64 @@
+Quantopian Notebook
+Each paragraph is separate cell
+
+import numpy as np
+import pandas as pd
+import scipy
+import numpy
+from quantopian.research import prices, symbols
+
+
+StocksTicker=["V","MA","AAPL","MSFT","GOOG","AMZN","FB","BRK-B","BABA","JPM","XOM","BAC","MCD","WMT","HD","CMG","GM","F","TGT","KO","GIS","MRO","PSX","AXP","GS","NDAQ","ABC","CELG","CVS","AAL","BA","GE","LUV","CTXS","SHW","AMT","REG","AEE","EXC","PCG","UNP","WM"]
+#StocksTicker=['BTC',"ETH","LTC","BCH","EOS",'LINK','TRX']
+Prices=[]
+CurrentPrices=[]
+DayBefore=[]
+Mean=[]
+Correlation=[]
+Order=[]
+
+
+for x in StocksTicker:
+    y = prices(
+    assets=symbols(x),
+    start='2019-04-24',
+    end='2019-09-24',
+    )
+    CurrentPrices.append(y['2019-09-24'])
+    DayBefore.append(y['2019-09-23'])
+    Mean.append(y.mean())
+    x=pd.Series(np.gradient(np.gradient(scipy.signal.savgol_filter(y,31, 2, 0, 1.0, -1, 'interp', 0.0))))
+    Prices.append(x)
+    
+
+for i in range(0,len(StocksTicker)-1):
+    for x in range(i+1, len(StocksTicker)):
+        Correlation.append((Prices[i].corr(Prices[x])))
+
+
+
+max(Correlation)
+min(Correlation)
+for i in range(0,len(StocksTicker)-1):
+    for x in range(i+1, len(StocksTicker)):
+        if max(Correlation)==((Prices[i].corr(Prices[x]))):
+            print "Highest is",StocksTicker[i], "and", StocksTicker[x], "with a correlation of", max(Correlation)
+        if min(Correlation)==((Prices[i].corr(Prices[x]))):
+            print "Lowest is",StocksTicker[i], "and", StocksTicker[x], "with a correlation of", min(Correlation)
+
+
+print "Strongest Correlations"
+Order=numpy.sort(Correlation,-1,'quicksort')
+for i in Order:
+   # print i
+    if  i<-0.40 or i>0.8:
+        for j in range(0,len(StocksTicker)-1):
+            for x in range(j+1, len(StocksTicker)):
+                if i==((Prices[j].corr(Prices[x]))):
+                    print StocksTicker[j], "=", StocksTicker[x], "=" ,i
+                          
+                    
+
+
+
+
