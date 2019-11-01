@@ -1,12 +1,8 @@
-Quantopian Notebook
-Each paragraph is separate cell
-
 import numpy as np
 import pandas as pd
 import scipy
 import numpy
 from quantopian.research import prices, symbols
-
 
 StocksTicker=["V","MA","AAPL","MSFT","GOOG","AMZN","FB","BRK-B","BABA","JPM","XOM","BAC","MCD","WMT","HD","CMG","GM","F","TGT","KO","GIS","MRO","PSX","AXP","GS","NDAQ","ABC","CELG","CVS","AAL","BA","GE","LUV","CTXS","SHW","AMT","REG","AEE","EXC","PCG","UNP","WM"]
 #StocksTicker=['BTC',"ETH","LTC","BCH","EOS",'LINK','TRX']
@@ -17,92 +13,25 @@ Mean=[]
 Correlation=[]
 Order=[]
 
-
+df = pd.DataFrame(columns=StocksTicker)
 for x in StocksTicker:
     y = prices(
-    assets=symbols(x),
-    start='2019-04-24',
-    end='2019-09-24',
-    )
-    CurrentPrices.append(y['2019-09-24'])
-    DayBefore.append(y['2019-09-23'])
-    Mean.append(y.mean())
-    x=pd.Series(np.gradient(np.gradient(scipy.signal.savgol_filter(y,31, 2, 0, 1.0, -1, 'interp', 0.0))))
-    Prices.append(x)
-    
+        assets=symbols(x),
+        start='2019-04-24',
+        end='2019-09-24',
+        frequency='minute'
+        )
+    df[x]=pd.Series(np.gradient(np.gradient(scipy.signal.savgol_filter(y,31, 2, 0, 1.0, -1, 'interp', 0.0))))
 
-for i in range(0,len(StocksTicker)-1):
-    for x in range(i+1, len(StocksTicker)):
-        Correlation.append((Prices[i].corr(Prices[x])))
+corr = df.corr()
 
+#corr.describe() useless for us rn
 
-
-max(Correlation)
-min(Correlation)
-for i in range(0,len(StocksTicker)-1):
-    for x in range(i+1, len(StocksTicker)):
-        if max(Correlation)==((Prices[i].corr(Prices[x]))):
-            print "Highest is",StocksTicker[i], "and", StocksTicker[x], "with a correlation of", max(Correlation)
-        if min(Correlation)==((Prices[i].corr(Prices[x]))):
-            print "Lowest is",StocksTicker[i], "and", StocksTicker[x], "with a correlation of", min(Correlation)
-
-
-print "Strongest Correlations"
-Order=numpy.sort(Correlation,-1,'quicksort')
-for i in Order:
-   # print i
-    if  i<-0.40 or i>0.8:
-        for j in range(0,len(StocksTicker)-1):
-            for x in range(j+1, len(StocksTicker)):
-                if i==((Prices[j].corr(Prices[x]))):
-                    print StocksTicker[j], "=", StocksTicker[x], "=" ,i
-                    
-                          
-size=3
-total=0
-multicorr=[]
-for i in range(0, len(neworder)):
-    for subset in itertools.combinations(neworder,i):
-        if len(subset)==size:
-                    #print (arr.shape[0]-1)
-                    #print(subset)
-                    total=float(subset[0])+float(subset[1])+float(subset[2])
-                    #print float(total/size)
-                    multicorr.append(float(total/size))
-#print multicorr
-
-
-x=0 
-y=1 
-z=2
-betterarray=[]
-for i in multicorr:
-    if i<-.50 or i>0.7:
-        #print arr.shape[0]
-        #print i,arr[x,0],arr[x,1],arr[y,0],arr[y,1],arr[z,0],arr[z,1]
-        betterarray.append([i,arr[x,0],arr[x,1],arr[y,0],arr[y,1],arr[z,0],arr[z,1]])
-    #print x,y,z
-    z=z+1
-    if z==(arr.shape[0]):
-        y=y+1
-        z=z-(arr.shape[0]-y-1)
-    if y==(arr.shape[0]-1):
-        x=x+1
-        y=y-(arr.shape[0]-2-x)
-        z=z-(arr.shape[0]-y-1)
-ba=np.array(betterarray)
-
-
-for i in ba:
-    n=0
-    for j in range (1,4):
-        for m in range (2,len(i)):
-            if i[j]==i[m] and j!=m:
-                n=n+1 
-                j=j+1
-    if n%2==0 and n>2:
-        print i
-
-
-
-
+#can make it more legible if needed,
+#it will be much more easier from this to see the correlation
+ax = sns.heatmap(
+    corr, 
+    vmin=-1, vmax=1, center=0,
+    square=True
+)
+#less number of negative correlation. bit shocking though. 
